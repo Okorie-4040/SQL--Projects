@@ -1,0 +1,197 @@
+--------------------------Most Profitable Companies----------------------
+
+select company, profits
+from forbes_global_2010_2014
+where profits in ( select top 3 profits
+from forbes_global_2010_2014 
+order by profits desc
+   )
+   order by profits desc
+
+
+
+
+---------------------------------Workers With The Highest Salaries-------------------------
+
+select top 2 salary, worker_title
+from worker
+join title
+on worker.worker_id = title.worker_ref_id
+order by salary desc
+
+
+
+------------------------------------ Ranking Most Active Guests-----------------------------
+
+select dense_rank() over (order by sum(n_messages) desc) as rnk,
+id_guest, 
+sum(n_messages) as number_of_total_messages
+from airbnb_contacts
+group by id_guest
+order by number_of_total_messages desc
+
+
+
+
+--------------------------------------matching hosts and guests with same gender and nationality-----------------
+
+  select distinct
+    host_id,
+    guest_id
+from airbnb_hosts h
+join airbnb_guests g
+on h.gender= g.gender
+and h.nationality = g.nationality
+;
+
+
+
+
+----------------------------------Income By Title and Gender-------------------------------
+
+select a.employee_title, a.sex,
+avg(salary + ttl_bonus) as compensation
+from sf_employee a join (
+select worker_ref_id,
+sum(bonus) as ttl_bonus
+from sf_bonus
+group by worker_ref_id
+) b
+on a.id = b.worker_ref_id
+group by a.employee_title, a.sex
+
+
+
+--------------------------------Highest Cost Orders----------------------------
+
+select top 1 first_name, sum(total_order_cost) as total_cost, order_date
+from customers
+join orders
+ on customers.id = orders.cust_id 
+ where order_date between '2019-02-01' and '2019-05-01'
+ group by first_name, order_date
+ order by total_cost desc
+
+
+
+------------------------------Largest Olympics-----------------------
+
+select top 1 games, count( distinct id ) as no_of_athletes
+from olympics_athletes_events
+group by games 
+order by 2 desc 
+
+
+
+---------------------------------Top Ranked Songs------------------
+
+select trackname, count (position) as no_top_position 
+from spotify_worldwide_daily_song_ranking
+where position =1
+group by trackname
+order by no_top_position desc
+
+
+
+----------Find all wineries which produce wines by possessing aromas of plum, cherry, rose, or hazelnut-------
+
+select distinct winery
+from winemag_p1
+where description like '%[^a-z]plum[^a-z]%' or 
+    description like '%[^a-z]cherry[^a-z]%' or
+    description like '%[^a-z]rose[^a-z]%' or
+    description like '%[^a-z]hazelnut[^a-z]%'
+
+
+
+-------------------------Top Businesses With Most Reviews-------------------
+
+select top 5 business_id,name, sum(review_count) as total_review
+from yelp_business
+group by business_id,name
+order by total_review desc
+
+
+-----------------------Top Cool Votes----------------
+
+select  review_text, business_name
+from yelp_reviews
+where cool = (select max(cool) 
+from yelp_reviews)
+group by review_text, business_name
+
+
+--------------------Customer Revenue In March-----------------
+
+select cust_id, sum(total_order_cost) as total_revenue 
+from orders
+where order_date like '2019-03%'
+group by cust_id
+order by total_revenue desc
+
+
+
+------------------Employee and Manager Salaries---------------
+
+select E.first_name as employee_name, E.salary as employee_salary
+from employee E
+join employee M
+on E.manager_id = M.id
+where E.salary > M.salary
+
+
+
+---------------------Highest Target Under Manager----------
+
+select  top 3 target, first_name 
+from salesforce_employees
+where manager_id = '13'
+group by target, first_name
+order by target desc
+
+
+
+-------------------------Classify Business Type-------------------
+
+select distinct business_name, 
+case when business_name like '%restaurant%' then 'restaurant'
+when business_name like '%cafe%'
+or business_name like '%café%' 
+or business_name like '%coffee%'  then 'cafe'
+when business_name like '%school%' then 'school'
+else 'other'
+end as  'business_type'
+from sf_restaurant_health_violations
+
+
+--------------------Number of violations------------
+
+select Substring (inspection_date, 1,4), count(violation_id) as numb_of_inspections
+from sf_restaurant_health_violations
+Where business_name = 'Roxanne Cafe' AND inspection_date LIKE '20%'
+group by inspection_date;
+
+
+-------------------Top 5 States With 5 Star Businesses-----------
+
+select top 6 state, count(stars) as n_businesses
+from yelp_business
+where stars = '5'
+group by state
+order by  n_businesses desc, state asc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
